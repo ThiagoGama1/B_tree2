@@ -94,6 +94,20 @@ void insereNaoCheio(ArvB *arvore, Registro r)
             arvore->chaves[i + 1] = arvore->chaves[i];
             i--;
         }
+        arvore->chaves[i + 1].matricula = r.matricula;
+        arvore->chaves[i + 1].offset = r.offset;
+        arvore->n++;
+    }
+    else
+    {
+        int i = 0;
+        while (i < arvore->n && arvore->chaves[i].matricula < r.matricula)
+        {
+            i++;
+        }
+        arvore->chaves[i + 1].matricula = r.matricula;
+        arvore->chaves[i + 1].offset = r.offset;
+        arvore->n++;
     }
 }
 ArvB *insereRegistro(ArvB *arvore, Registro r)
