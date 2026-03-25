@@ -84,7 +84,7 @@ int chamaBusca(ArvB *arvore, char *nomeArquivo)
     }
     return buscaArquivo(nomeArquivo, r->offset);
 }
-void insereNaoCheio(ArvB *arvore, Registro r)
+void insereRaiz(ArvB *arvore, Registro r)
 {
     if (arvore->folha == 1)
     {
@@ -105,12 +105,32 @@ void insereNaoCheio(ArvB *arvore, Registro r)
         {
             i++;
         }
-        arvore->chaves[i + 1].matricula = r.matricula;
-        arvore->chaves[i + 1].offset = r.offset;
-        arvore->n++;
+        if(arvore->filhos[i]->n > MAX_CHAVES){
+            //split
+        }
+        else{
+            insereRaiz(arvore->filhos[i], r);
+        }
     }
 }
-ArvB *insereRegistro(ArvB *arvore, Registro r)
+void splitFilho(ArvB *pai, int i){
+    ArvB *filhoCheio = pai->filhos[i];
+    ArvB *novoFilho = alocaPagina(filhoCheio->folha);
+    int meio = MAX_CHAVES / 2;
+    int k = pai->n - 1;
+
+    for(int j = 0; j < meio; j++){
+        novoFilho->chaves[j] = filhoCheio->chaves[j + meio + 1];
+    }
+    novoFilho->n = meio;
+    filhoCheio->n = meio;
+    while(k >= i){
+        pai->chaves[k+1] = pai->chaves[k];
+        pai->filhos[k+2] = pai->filhos[k+1];
+        k--;
+    }
+}
+ArvB *insereArvore(ArvB *arvore, Registro r)
 {
     if (arvore == NULL)
     {
