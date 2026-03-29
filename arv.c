@@ -139,6 +139,14 @@ void splitFilho(ArvB *pai, int i)
     pai->chaves[i] = filhoCheio->chaves[meio];
     pai->filhos[i + 1] = novoFilho; // i+1 porque pai->chaves[i] é a chave do meio, e novofilho tem as chaves do meio para a direita (maiores que o meio)
     pai->n++;
+    
+    if(filhoCheio->folha == 0){
+        int c = meio + 1;
+        while(c <= MAX_CHAVES){
+            novoFilho->filhos[c - meio - 1] = filhoCheio->filhos[c];
+            c++;
+        }
+    }
 }
 ArvB *insereArvore(ArvB *arvore, Registro r)
 {
@@ -150,9 +158,17 @@ ArvB *insereArvore(ArvB *arvore, Registro r)
         novoRegistro->n = 1;
         return novoRegistro;
     }
-    if (arvore->n >= MAX_CHAVES)
+    if (arvore->n >= MAX_CHAVES) //se a raiz estiver cheia, cria nova raiz e split
     {
         ArvB *novaRaiz = alocaPagina(0);
+        novaRaiz->filhos[0] = arvore;
+        splitFilho(novaRaiz, 0);
+        insereRaiz(novaRaiz, r);
+        return novaRaiz;
+    }
+    else{ //se a raiz nao estiver cheia
+        insereRaiz(arvore, r);
+        return arvore;
     }
 }
 
