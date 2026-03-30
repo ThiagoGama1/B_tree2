@@ -1,4 +1,5 @@
 #ifndef ARVORE_H
+#include <stdio.h>
 #define ARVORE_H
 
 #define ORDEM 3
@@ -26,5 +27,11 @@ ArvB *criaArvoreB();
 Registro *buscaArvoreB(ArvB *arvore, long matricula);
 int buscaArquivo(char *nomeArquivo, long offset);
 Registro *cadastrar(long matricula, char *nome, char *nomeArquivo, char *telefone);
-
+void destroiArv(ArvB *arvore);
+void gravaArvore(ArvB *arvore, char *nomeArquivo);
+void gravaArvoreRec(ArvB *arvore, FILE *file);
+void insereRaiz(ArvB *arvore, Registro r);
+void splitFilho(ArvB *pai, int i);
+ArvB *insereArvore(ArvB *arvore, Registro r);
+int chamaBusca(ArvB *arvore, char *nomeArquivo);
 #endif

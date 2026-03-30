@@ -25,7 +25,7 @@ Registro *cadastrar(long matricula, char *nome, char *nomeArquivo, char *telefon
         return NULL;
      }
      long offsetAtual = ftell(file); //ftell retorna a posicao atual do ponteiro no arquivo
-     fprintf(file, "%s %s\n", nome, telefone);
+     fprintf(file, "%ld %s %s\n", matricula, nome, telefone);
 
      fclose(file);
      Registro *r = malloc(sizeof(*r));
@@ -74,8 +74,9 @@ int buscaArquivo(char *nomeArquivo, long offset)
         perror("Erro ao abrir o arquivo");
         return 0;
     }
+    long mat;
     fseek(file, offset, SEEK_SET);
-    if (fscanf(file, "%s %s", nome, telefone) == 2)
+    if (fscanf(file, "%ld %s %s", &mat, nome, telefone) == 3)
     {
         printf("Nome: %s, Telefone: %s", nome, telefone);
         fclose(file);
@@ -136,10 +137,9 @@ void splitFilho(ArvB *pai, int i)
     int meio = MAX_CHAVES / 2;
     int k = pai->n - 1;
 
-    for (int j = 0; j < meio; j++) 
+    for (int j = 0; j < (MAX_CHAVES - meio - 1); j++)
     {
-        //como a ordem é 3, nao copia nada, mas 
-        //o codigo funciona caso a ordem seja alterada eventualmente
+        //copia as chaves apos o meio para o novo filho
         novoFilho->chaves[j] = filhoCheio->chaves[meio + 1 + j];
     }
     novoFilho->n = MAX_CHAVES - meio - 1;
@@ -195,9 +195,94 @@ void destroiArv(ArvB *arvore){
     free(arvore);
 }
 //falta o gravar e a main
+void gravaArvoreRec(ArvB *arvore, FILE *file){
+    if(arvore == NULL){
+        return;
+    }
+    fprintf(file, "%p %d", arvore, arvore->n);
 
+    for(int i = 0; i < arvore->n; i++){
+        fprintf(file, " %ld %ld", arvore->chaves[i].matricula, arvore->chaves[i].offset);
+    }
+
+    for(int i = 0; i < arvore->n + 1; i++){
+        fprintf(file, " %p", arvore->filhos[i]);
+    }
+    fprintf(file, "\n");
+    
+    for(int i = 0; i < arvore->n + 1; i++){
+        gravaArvoreRec(arvore->filhos[i], file);
+    }
+}
+void gravaArvore(ArvB *arvore, char *nomeArquivo){
+    if(arvore == NULL){
+        return;
+    }
+    FILE *file = fopen(nomeArquivo, "w");
+    if(file == NULL){
+        return;
+    }
+    fprintf(file, "%p\n", arvore);
+    gravaArvoreRec(arvore, file);
+
+    fclose(file);
+}
 int main(int argc, char *argv[])
 {
+    if(argc < 3){
+        printf("Uso: %s <arquivo_registros> <arquivo_arvore>\n", argv[0]);
+        return 1;
+    }
+
     ArvB *arvore = criaArvoreB();
+    
+    FILE *file = fopen(argv[1], "r");
+    if(file != NULL){
+        long matricula;
+        char nome[100], telefone[20];
+        while(1){
+            long offset = ftell(file);
+            if(fscanf(file, "%ld %s %s", &matricula, nome, telefone) != 3) break;
+            Registro r;
+            r.matricula = matricula;
+            r.offset = offset;
+            arvore = insereArvore(arvore, r);
+        }
+        fclose(file);
+    }
+
+    int opcao;
+    do {
+        printf("\n1. Cadastrar\n2. Pesquisar\n3. Gravar\n4. Sair\n");
+        printf("Opcao: ");
+        scanf("%d", &opcao);
+        switch(opcao){
+            case 1: {
+                long matricula;
+                char nome[100], telefone[20];
+                printf("Matricula: "); scanf("%ld", &matricula);
+                printf("Nome: ");     scanf("%s", nome);
+                printf("Telefone: "); scanf("%s", telefone);
+                Registro *r = cadastrar(matricula, nome, argv[1], telefone);
+                if(r != NULL){
+                    arvore = insereArvore(arvore, *r);
+                    free(r);
+                }
+                break;
+            }
+            case 2:
+                chamaBusca(arvore, argv[1]);
+                break;
+            case 3:
+                gravaArvore(arvore, argv[2]);
+                break;
+            case 4:
+                destroiArv(arvore);
+                break;
+            default:
+                printf("Opcao invalida!\n");
+        }
+    } while(opcao != 4);
+
     return 0;
 }
