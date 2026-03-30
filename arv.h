@@ -25,6 +25,6 @@ Pagina *alocaPagina(int folha);
 ArvB *criaArvoreB();
 Registro *buscaArvoreB(ArvB *arvore, long matricula);
 int buscaArquivo(char *nomeArquivo, long offset);
-Registro *cadastrar(long matricula, char *nome, char *telefone);
+Registro *cadastrar(long matricula, char *nome, char *nomeArquivo, char *telefone);
 
 #endif

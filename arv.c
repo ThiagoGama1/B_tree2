@@ -17,8 +17,21 @@ Pagina *alocaPagina(int folha)
     }
     return novaPagina;
 }
-Registro *cadastrar(long matricula, char *nome, char *telefone)
-{ // TO DO
+Registro *cadastrar(long matricula, char *nome, char *nomeArquivo, char *telefone)
+{
+     FILE *file = fopen(nomeArquivo, "a");
+     if(file == NULL){
+        perror("Erro ao abrir arquivo");
+        return NULL;
+     }
+     long offsetAtual = ftell(file); //ftell retorna a posicao atual do ponteiro no arquivo
+     fprintf(file, "%s %s\n", nome, telefone);
+
+     fclose(file);
+     Registro *r = malloc(sizeof(*r));
+     r->matricula = matricula;
+     r->offset = offsetAtual;
+     return r;
 }
 
 ArvB *criaArvoreB()
@@ -105,14 +118,15 @@ void insereRaiz(ArvB *arvore, Registro r)
         {
             i++;
         }
-        if (arvore->filhos[i]->n > MAX_CHAVES)
+        if (arvore->filhos[i]->n == MAX_CHAVES)
         {
-            // split
+            splitFilho(arvore, i);
+            
+            if(arvore->chaves[i].matricula < r.matricula){
+                i++;
+            }
         }
-        else
-        {
             insereRaiz(arvore->filhos[i], r);
-        }
     }
 }
 void splitFilho(ArvB *pai, int i)
@@ -171,6 +185,16 @@ ArvB *insereArvore(ArvB *arvore, Registro r)
         return arvore;
     }
 }
+void destroiArv(ArvB *arvore){
+    if(arvore == NULL){
+        return;
+    }
+    for(int i = 0; i < arvore->n + 1; i++){
+        destroiArv(arvore->filhos[i]);
+    }
+    free(arvore);
+}
+//falta o gravar e a main
 
 int main(int argc, char *argv[])
 {
